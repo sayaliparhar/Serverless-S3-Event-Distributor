@@ -20,11 +20,11 @@ The pipeline consists of four primary AWS services linked together:
 - Action: Triggers an s3:ObjectCreated:Put event.
 - Output: Sends the raw, verbose S3 event JSON payload.
 
-<p> align="center">
+<p align="center">
   <img width="750" alt="S3-bucket creation" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Bucket%20created.png?raw=true" />
 </p>
 
-<p> align="center">
+<p align="center">
   <img width="750" alt="S3-objects-uploaded" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Bucket-object-uploaded.png?raw=true" />
 </p>
 
@@ -64,17 +64,17 @@ This component handles the critical tasks of **polling, transformation, and rout
 
 1) **Create SQS Queue**: Create a Standard SQS queue (e.g., s3-upload-events-queue).
 
-<p> align="center">
+<p align="center">
   <img width="750" alt="SQS" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/SQS.png?raw=true" />
 </p>
 
 2) **Create SNS Topic**: Create a Standard SNS Topic (e.g., upload-notifications-topic).Subscribe your desired endpoints (e.g., email) to this topic.
 
-<p> align="center">
+<p align="center">
   <img width="750" alt="SNS Topic created" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/SNS-Topic-Created.png?raw=true" />
 </p>
 
-<p> align="center">
+<p align="center">
   <img width="750" alt="SNS-Subscription" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/SNS-Subscriptions.png?raw=true" />
 </p>
 
@@ -84,30 +84,28 @@ This component handles the critical tasks of **polling, transformation, and rout
 - Set the Destination to the SQS queue created in Step 1.
 - Set the Events to s3:ObjectCreated:*.
 
-<p> align="center">
-  <img width="750" alt="s3-event-notification-creation" src="" />
+<p align="center">
+  <img width="750" alt="s3-event-notification-creation" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/s3-Event-Notication-creation.png?raw=true" />
 </p>
 
 4) **Create EventBridge Pipe**: 
 - **Source**: Select the SQS queue (s3-upload-events-queue).
 
-<p> align="center">
-  <img width="750" alt="Eventbridge pipe creation" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/EventBrige%20PIpe%20created.png?raw=true" />
-</p>
-
-<p> align="center">
-  <img width="750" alt="Eventbridge pipe Flow of source and target" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Eventbridge%20pipeline%20Flow.png?raw=true" />
-</p>
-
 - **Target**: Select the SNS Topic (upload-notifications-topic).
 
 - **Input Transformer**: Configure the Input Transformer to clean the SQS message body.
 
+<p align="center">
+  <img width="750" alt="Eventbridge pipe creation" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/EventBrige%20PIpe%20created.png?raw=true" />
+</p>
+
+<p align="center">
+  <img width="750" alt="Eventbridge pipe Flow of source and target" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Eventbridge%20pipeline%20Flow.png?raw=true" />
+</p>
+
 ---
 
-<p> align="center">
-  <img width="750" alt="S3-bucket creation" src="" />
-</p>
+
 
 ## 🚦 Monitoring and Alarms (CloudWatch)
 
@@ -122,7 +120,7 @@ We monitor the (**TargetFailures**) metric, which tracks any failure to deliver 
 3. **SNS Topic** (Target Monitoring):
 We monitor the (**NumberOfNotificationsFailed**) metric. This tracks the final stage of delivery—whether the SNS topic is successfully fanning out messages to its own subscribers (e.g., failed HTTP endpoints). An alert is triggered when the **Sum** of failures exceeds 5 over a five-minute period, allowing for a few transient errors while still ensuring reliable final delivery.
 
-<p> align="center">
+<p align="center">
   <img width="750" alt="Cloudwatch Alarms" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Cloudwatch-Alarms.png?raw=true" />
 </p>
 
