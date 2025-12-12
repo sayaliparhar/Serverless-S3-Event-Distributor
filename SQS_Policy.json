@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Id": "__default_policy_ID",
+  "Statement": [
+    {
+      "Sid": "__owner_statement",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::861276090426:root"
+      },
+      "Action": "SQS:*",
+      "Resource": "arn:aws:sqs:ap-south-1:861276090426:s3-uploads-events-queue"
+    },
+    {
+      "Sid": "__owner_statement",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "s3.amazonaws.com"
+      },
+      "Action": "SQS:*",
+      "Resource": "arn:aws:sqs:ap-south-1:861276090426:s3-uploads-events-queue"
+    }
+  ]
+}
