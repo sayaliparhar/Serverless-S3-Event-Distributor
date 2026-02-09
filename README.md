@@ -1,144 +1,100 @@
 # Serverless S3 Event Distributor
+
+A cloud-native, event-driven automation tool that processes S3 bucket metadata in real-time and alerts subscribers via Amazon SNS.
+
 ---
 ## Project Overview
-This project implements a reliable, serverless, event-driven architecture on AWS to process file uploads to an S3 bucket and distribute a clean notification to downstream subscribers via an SNS Topic.
+This project demonstrates a serverless workflow where file uploads to an **Amazon S3** bucket act as a trigger. An **AWS Lambda** function (Python) intercepts the event, extracts critical metadata (Filename, Bucket Name, File Size), and publishes a formatted alert to an **Amazon SNS** topic for instant notification.
 
-The core of the architecture is the **Amazon EventBridge Pipe**, which connects an SQS queue (acting as a durable buffer) to an SNS Topic. This approach ensures **durability**, **decoupling**, and **scalability** for file processing notifications.
-
----
-## Project Architecture
-The pipeline consists of four primary AWS services linked together: 
-**S3 $\rightarrow$ SQS $\rightarrow$ EventBridge Pipe $\rightarrow$ SNS.** 
-
-![Serverless-S3-Event-Distributor](Architecture/Serverless%20S3%20Event%20Distributor%20Architecture.png)
-
-### Architecture Flow
-
-1. **Event Source: Amazon S3 Bucket**
-- Component: S3 Bucket (image-moderation-project-bucket)
-- Role: Initiation Point
-- Action: Triggers an s3:ObjectCreated:Put event.
-- Output: Sends the raw, verbose S3 event JSON payload.
-
-<p align="center">
-  <img width="750" alt="S3-bucket creation" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Bucket%20created.png?raw=true" />
-</p>
-
-<p align="center">
-  <img width="750" alt="S3-objects-uploaded" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Bucket-object-uploaded.png?raw=true" />
-</p>
-
-2. **Durable Buffer: Amazon SQS Queue**
-- Component: SQS Queue (s3-upload-events-queue)
-- Role: Decoupling and Durability
-- Action: Receives the raw S3 event and holds it.
-- Input for Next Step: The SQS message is the source data polled by the Pipe.
-
-3. **Core Processor: Amazon EventBridge Pipe**
-This component handles the critical tasks of **polling, transformation, and routing.**
-
-- Component: EventBridge Pipe (Your configured pipe name)
-- Role: Polling, Transformation, and Routing
-- Action 1 (Polling): Continuously reads (polls) the SQS queue.
-- Action 2 (Transformation): Executes the Input Transformer to clean the data:
-   1) Input: Full SQS message with the wrapped S3 event.
-   2) Output: Clean JSON payload containing only imageName and uploadTimestamp.
-- Action 3 (Routing): Successfully processed messages are deleted from SQS and delivered to the target.
-
-4. **Final Target: Amazon SNS Topic**
-
-- Component: SNS Topic (upload-notifications-topic)
-- Role: Fan-out Delivery
-- Action: Receives the clean JSON payload from the Pipe.
-- Output: Instantly publishes and distributes the clean event to all subscribed endpoints (e.g., email, Lambda, HTTP).
-
-
----
-## Deployment and Configuration 
-
-### Prerequisites
-- An existing S3 Bucket for image uploads.
-- IAM roles configured for the EventBridge Pipe to read from SQS and publish to SNS.
-
-### Implementation steps:
-
-1) **Create SQS Queue**: Create a Standard SQS queue (e.g., s3-upload-events-queue).
-
-<p align="center">
-  <img width="750" alt="SQS" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/SQS.png?raw=true" />
-</p>
-
-2) **Create SNS Topic**: Create a Standard SNS Topic (e.g., upload-notifications-topic).Subscribe your desired endpoints (e.g., email) to this topic.
-
-<p align="center">
-  <img width="750" alt="SNS Topic created" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/SNS-Topic-Created.png?raw=true" />
-</p>
-
-<p align="center">
-  <img width="750" alt="SNS-Subscription" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/SNS-Subscriptions.png?raw=true" />
-</p>
-
-3) **Configure S3 Event Notifications**: 
-
-- In the S3 Console for your bucket, go to Properties $\rightarrow$ Event Notifications.
-- Set the Destination to the SQS queue created in Step 1.
-- Set the Events to s3:ObjectCreated:*.
-
-<p align="center">
-  <img width="750" alt="s3-event-notification-creation" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/s3-Event-Notication-creation.png?raw=true" />
-</p>
-
-4) **Create EventBridge Pipe**: 
-- **Source**: Select the SQS queue (s3-upload-events-queue).
-
-- **Target**: Select the SNS Topic (upload-notifications-topic).
-
-- **Input Transformer**: Configure the Input Transformer to clean the SQS message body.
-
-<p align="center">
-  <img width="750" alt="Eventbridge pipe creation" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/EventBrige%20PIpe%20created.png?raw=true" />
-</p>
-
-<p align="center">
-  <img width="750" alt="Eventbridge pipe Flow of source and target" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Eventbridge%20pipeline%20Flow.png?raw=true" />
-</p>
+This project shows how to build a lightweight automation pipeline without servers.
 
 ---
 
+## 🛠️ AWS Services Used
 
+- **Cloud**: AWS (S3, Lambda, SNS, IAM, CloudWatch)
 
-## 🚦 Monitoring and Alarms (CloudWatch)
+- **Language**: Python 3.x (Boto3 SDK)
 
-Critical alarms have been configured using **Amazon CloudWatch** to ensure the pipeline's health and prevent message loss or backlogs.
+---
+## Architecture
 
-1. **SQS Queue** (Source Monitoring):
-We monitor the (**ApproximateAgeOfOldestMessage**) metric. An alarm is set to trigger when the **Maximum** age exceeds **60 seconds** for three consecutive periods. This alert is critical for detecting a message backlog, indicating that the EventBridge Pipe is either failing or is unable to poll the queue fast enough to keep up with the incoming S3 events.
+1. **S3 Bucket**: Acts as the event source (ObjectCreated)
 
-2. **EventBridge Pipe** (Core Monitoring):
-We monitor the (**TargetFailures**) metric, which tracks any failure to deliver a message to the SNS target. An alarm is set to trigger immediately if the **Sum** of failures is **greater than 0** for even a single period. This ensures that any permissions issue or configuration problem preventing successful routing is caught immediately.
+2. **IAM Role**: Provides the Lambda function with **"Least Privilege"** permissions (sns:Publish and logs:CreateLogGroup).
 
-3. **SNS Topic** (Target Monitoring):
-We monitor the (**NumberOfNotificationsFailed**) metric. This tracks the final stage of delivery—whether the SNS topic is successfully fanning out messages to its own subscribers (e.g., failed HTTP endpoints). An alert is triggered when the **Sum** of failures exceeds 5 over a five-minute period, allowing for a few transient errors while still ensuring reliable final delivery.
+3. **AWS Lambda**: The compute layer that parses the JSON event sent by S3.
 
-<p align="center">
-  <img width="750" alt="Cloudwatch Alarms" src="https://github.com/sayaliparhar/Serverless-S3-Event-Distributor/blob/master/TestCases/Cloudwatch-Alarms.png?raw=true" />
-</p>
+4. **Amazon SNS**: The distribution layer that sends emails to subscribed users.
+
+5. **CloudWatch**: Used for real-time monitoring and debugging.
+
+![Serverless-S3-Event-Distributor](Architecture/Serverless-S3-Event-Distributor.png)
+
+---
+
+## Prerequisites
+- AWS Account
+
+- Verified email address in Amazon SNS
+---
+## Configuration
+1. **SNS Setup**: Create a Standard Topic and subscribe your email.
+
+2. **IAM Setup**: Create an Execution Role for Lambda with the following policy:
+```json
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "sns:Publish",
+            "Resource": "YOUR_SNS_TOPIC_ARN"
+        }
+    ]
+}
+```
+3. **Lambda Setup**: Deploy the lambda_function.py code and attach the S3 trigger.
+
+---
+
+## 🧪 Testing
+1. Upload a file to the configured S3 bucket.
+
+2. The Lambda will trigger automatically.
+
+3. Check your email for a message like:
+
+  ```
+  "New file uploaded! Bucket: s3-image-moderation-bucket | File: img.jpg | Size: 1024 bytes"
+
+  ```
+---
+
+## 📊 Observability & Monitoring
+* **Structured Logging:** Centralized application logs in **CloudWatch Logs** with a 14-day retention policy for cost optimization.
+* **Proactive Alerting:** Configured **CloudWatch Alarms** to trigger SNS notifications if Lambda execution errors exceed a 0% threshold.
+* **Health Dashboard:** Created a custom **CloudWatch Dashboard** to track real-time metrics for S3 ingestion rates and Lambda latency.
+---
+
+## 🧠 Key Learnings
+1. **Event-Driven Logic**: Learned how to make AWS services "talk" to each other automatically without manual intervention.
+
+2. **Serverless Benefits**: Understood how to build tools that cost ₹0 when not in use and scale instantly when files are uploaded.
+
+3. **Security (IAM)**: Learned to give a service the minimum power it needs to work (Least Privilege), keeping the cloud account safe.
+
+4. **Monitoring**: Used CloudWatch to "see" inside the code and fix errors quickly using logs.
 
 ---
 
 ## 🚀 Future Enhancements
-To make the pipeline more efficient, smarter, and resilient you can make some changes in future.
+1. **IaC (Terraform)**: Automate the entire setup so it can be deployed in seconds with one command.
 
-1. **Data Filtering and Efficiency**: Reduce costs and downstream processing load by filtering out non-essential S3 events.
+2. **Dead Letter Queue (DLQ)**: Add a "safety net" (SQS) to catch and save any failed notifications for later review.
 
-- Mechanism: Implement a JSONPath filter on the Pipe's Source stage to check for specific file extensions (e.g., only .png or .jpg) or file size thresholds.
+3. **Database Integration**: Instead of just an email, save the file details into a DynamoDB table for a permanent record.
 
-2. **Message Enrichment and Business Logic**: Look up external metadata (e.g., file owner, project ID) before sending the final notification.
-
-- Mechanism: Insert an AWS Lambda function into the Enrichment stage of the EventBridge Pipe. The Lambda will perform the lookup and return an enhanced JSON object.
-
-3. **Error Handling and Resilience (DLQ)**: Prevent message loss due to repeated target failures.
-
-- Mechanism: Configure a Dead-Letter Queue (DLQ) on the Source SQS Queue. Messages that fail to be processed by the Pipe after a set number of retries (maxReceiveCount) will be shunted to the DLQ for manual inspection.
+4. **Image Security**: Use AWS Rekognition to automatically check if an uploaded image is safe or contains specific objects.
 
 ---
