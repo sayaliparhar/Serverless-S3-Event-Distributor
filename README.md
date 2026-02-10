@@ -125,7 +125,6 @@ This project shows how to build a lightweight automation pipeline without server
   <img width="750" alt="Proactive Alarm for Error handling" src="TestCases/Proactive Alarm for Error handling.png" />
 </p>
 
-* **Health Dashboard:** Created a custom **CloudWatch Dashboard** to track real-time metrics for S3 ingestion rates and Lambda latency.
 ---
 
 ## 🧠 Key Learnings
