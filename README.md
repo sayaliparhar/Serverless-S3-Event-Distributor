@@ -66,7 +66,6 @@ This project shows how to build a lightweight automation pipeline without server
     ]
   }
   ```
-
 <p align="center">
   <img width="750" alt="IAM Role and Permissions" src="TestCases/IAM Role and Permissions.png" />
 </p>
@@ -108,6 +107,7 @@ This project shows how to build a lightweight automation pipeline without server
 <p align="center">
   <img width="750" alt="Email Message Notification" src="TestCases/Email message notification.png" />
 </p>
+
 ---
 
 ## 📊 Observability & Monitoring
