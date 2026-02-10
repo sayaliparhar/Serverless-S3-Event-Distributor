@@ -38,28 +38,68 @@ This project shows how to build a lightweight automation pipeline without server
 
 - Verified email address in Amazon SNS
 ---
-## Configuration
-1. **SNS Setup**: Create a Standard Topic and subscribe your email.
 
-2. **IAM Setup**: Create an Execution Role for Lambda with the following policy:
-```json
+## 🛠️ Step-by-Step Implementation
+
+### 1. Messaging Layer (SNS)
+* Create an SNS Standard Topic named `s3-upload-notify-topic`.
+* Create an Email Subscription and confirm it via the verification link sent to your inbox.
+
+<p align="center">
+  <img width="750" alt="SNS-Topic" src="" />
+</p>
+
+### 2. Security & Permissions (IAM)
+* Create an IAM Execution Role for Lambda.
+* Attach the `AWSLambdaBasicExecutionRole` policy for CloudWatch Logs.
+* Add an inline policy to allow `sns:Publish` specifically for your Topic ARN.
+
+  ```json
   {
     "Version": "2012-10-17",
     "Statement": [
         {
             "Effect": "Allow",
             "Action": "sns:Publish",
-            "Resource": "YOUR_SNS_TOPIC_ARN"
+            "Resource": "YOUR-SNS-TOPIC-ARN"
         }
     ]
-}
-```
-3. **Lambda Setup**: Deploy the lambda_function.py code and attach the S3 trigger.
+  }
+  ```
+
+<p align="center">
+  <img width="750" alt="IAM Role and Permissions" src="" />
+</p>
+
+### 3. Compute Layer (Lambda)
+
+* Create a Python 3.x Lambda function.
+* Paste the provided `lambda_function.py` code.
+
+
+<p align="center">
+  <img width="750" alt="Lambda Creation" src="" />
+</p>
+
+### 4. Storage Trigger (S3)
+* In your S3 bucket properties, create a new **Event Notification**.
+* Set the Event type to `All object create events`.
+* Select your Lambda function as the destination.
+
+
+<p align="center">
+  <img width="750" alt="S3-Event-notification creation" src="" />
+</p>
 
 ---
 
 ## 🧪 Testing
 1. Upload a file to the configured S3 bucket.
+
+
+<p align="center">
+  <img width="750" alt="S3-Bucket-Image-Upload" src="" />
+</p>
 
 2. The Lambda will trigger automatically.
 
@@ -69,11 +109,27 @@ This project shows how to build a lightweight automation pipeline without server
   "New file uploaded! Bucket: s3-image-moderation-bucket | File: img.jpg | Size: 1024 bytes"
 
   ```
+
+<p align="center">
+  <img width="750" alt="Email Message Notification" src="" />
+</p>
 ---
 
 ## 📊 Observability & Monitoring
 * **Structured Logging:** Centralized application logs in **CloudWatch Logs** with a 14-day retention policy for cost optimization.
+
+
+<p align="center">
+  <img width="750" alt="Cloudwatch Lambda logs" src="" />
+</p>
+
 * **Proactive Alerting:** Configured **CloudWatch Alarms** to trigger SNS notifications if Lambda execution errors exceed a 0% threshold.
+
+
+<p align="center">
+  <img width="750" alt="Proactive Alarm for Error handling" src="" />
+</p>
+
 * **Health Dashboard:** Created a custom **CloudWatch Dashboard** to track real-time metrics for S3 ingestion rates and Lambda latency.
 ---
 
