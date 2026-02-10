@@ -46,7 +46,7 @@ This project shows how to build a lightweight automation pipeline without server
 * Create an Email Subscription and confirm it via the verification link sent to your inbox.
 
 <p align="center">
-  <img width="750" alt="SNS-Topic" src="" />
+  <img width="750" alt="SNS-Topic" src="TestCases/SNS-Topic.png" />
 </p>
 
 ### 2. Security & Permissions (IAM)
@@ -68,7 +68,7 @@ This project shows how to build a lightweight automation pipeline without server
   ```
 
 <p align="center">
-  <img width="750" alt="IAM Role and Permissions" src="" />
+  <img width="750" alt="IAM Role and Permissions" src="TestCases/IAM Role and Permissions.png" />
 </p>
 
 ### 3. Compute Layer (Lambda)
@@ -78,7 +78,7 @@ This project shows how to build a lightweight automation pipeline without server
 
 
 <p align="center">
-  <img width="750" alt="Lambda Creation" src="" />
+  <img width="750" alt="Lambda Creation" src="TestCases/Lambda Creation.png" />
 </p>
 
 ### 4. Storage Trigger (S3)
@@ -88,7 +88,7 @@ This project shows how to build a lightweight automation pipeline without server
 
 
 <p align="center">
-  <img width="750" alt="S3-Event-notification creation" src="" />
+  <img width="750" alt="S3-Event-notification creation" src="TestCases/S3-Event notification creation.png" />
 </p>
 
 ---
@@ -98,20 +98,15 @@ This project shows how to build a lightweight automation pipeline without server
 
 
 <p align="center">
-  <img width="750" alt="S3-Bucket-Image-Upload" src="" />
+  <img width="750" alt="S3-Bucket-Image-Upload" src="TestCases/S3-bucket -Image-upload.png" />
 </p>
 
 2. The Lambda will trigger automatically.
 
 3. Check your email for a message like:
 
-  ```
-  "New file uploaded! Bucket: s3-image-moderation-bucket | File: img.jpg | Size: 1024 bytes"
-
-  ```
-
 <p align="center">
-  <img width="750" alt="Email Message Notification" src="" />
+  <img width="750" alt="Email Message Notification" src="TestCases/Email message notification.png" />
 </p>
 ---
 
@@ -120,14 +115,14 @@ This project shows how to build a lightweight automation pipeline without server
 
 
 <p align="center">
-  <img width="750" alt="Cloudwatch Lambda logs" src="" />
+  <img width="750" alt="Cloudwatch Lambda logs" src="TestCases/Cloudwatch%20Lambda%20logs.png" />
 </p>
 
 * **Proactive Alerting:** Configured **CloudWatch Alarms** to trigger SNS notifications if Lambda execution errors exceed a 0% threshold.
 
 
 <p align="center">
-  <img width="750" alt="Proactive Alarm for Error handling" src="" />
+  <img width="750" alt="Proactive Alarm for Error handling" src="TestCases/Proactive Alarm for Error handling.png" />
 </p>
 
 * **Health Dashboard:** Created a custom **CloudWatch Dashboard** to track real-time metrics for S3 ingestion rates and Lambda latency.
